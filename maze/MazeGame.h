@@ -15,11 +15,13 @@
 #include <string>
 
 enum CellType { WALL, PATH, MOUSE, TARGET, TIPS1, TIPS2 }; //单元格类型
-struct Color { float r, g, b; };
 
 //迷宫游戏类
 class MazeGame {
 private:
+    GLuint mouseTexture; //老鼠的纹理ID
+    GLuint targetTexture; //粮仓的纹理ID
+
     CellType maze[100][100]; //存储迷宫布局的二维数组
     int mouseX, mouseY; //老鼠当前坐标
     int targetX, targetY; //目标位置坐标

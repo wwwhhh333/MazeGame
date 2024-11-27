@@ -8,7 +8,7 @@ void showStartScreen(GLFWwindow* window) {
     int windowWidth, windowHeight;
     glfwGetWindowSize(window, &windowWidth, &windowHeight);
 
-    //设置背景颜色为蓝色
+    //设置背景颜色
     glClearColor(1.0, 1.0, 0.6, 1.0);
     glClear(GL_COLOR_BUFFER_BIT);
 
@@ -32,13 +32,13 @@ void showStartScreen(GLFWwindow* window) {
     }
 
     //计算按钮中心坐标
-    double buttonCenterX = (windowWidth / 2.0) / 400.0 - 1.0;
+    double buttonCenterX = (windowWidth / 2.0) / 600.0 - 1.0;
     double buttonCenterY = 0.0f;
 
     //计算文本起始坐标以实现上下居中
-    double textStartX = buttonCenterX - (textWidth / 2.0) / 400.0;
+    double textStartX = buttonCenterX - (textWidth / 2.0) / 600.0;
     const double FONT_HEIGHT = 24.0f;
-    double textStartY = buttonCenterY - (FONT_HEIGHT / 2.0f) / 400.0f;
+    double textStartY = buttonCenterY - (FONT_HEIGHT / 2.0f) / 600.0f;
 
     //设置文本位置并绘制
     glRasterPos2f(textStartX, textStartY);
@@ -55,8 +55,8 @@ void showStartScreen(GLFWwindow* window) {
             double x, y;
             glfwGetCursorPos(window, &x, &y);
             // 转换坐标到 -1到1范围
-            x = (x / 400.0) - 1.0;
-            y = -(y / 400.0) + 1.0;
+            x = (x / 600.0) - 1.0;
+            y = -(y / 600.0) + 1.0;
             // 检查是否点击了按钮区域
             if (x >= -0.5f && x <= 0.5f && y >= -0.2f && y <= 0.2f) {
                 break;
@@ -72,7 +72,7 @@ void showEndScreen(GLFWwindow* window, bool isWon) {
     glfwGetWindowSize(window, &windowWidth, &windowHeight);
 
     //设置背景颜色
-    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+    glClearColor(1.0, 1.0, 0.6, 1.0);
     glClear(GL_COLOR_BUFFER_BIT);
 
     std::string endText;
@@ -95,8 +95,8 @@ void showEndScreen(GLFWwindow* window, bool isWon) {
     double textHeight = 24;
 
     //计算文本在窗口中的居中位置
-    double textX = (windowWidth / 2.0 - textWidth / 2.0) / 400.0 - 1.0;
-    double textY = (windowHeight / 2.0 - textHeight / 2.0) / 400.0 - 1.0;
+    double textX = (windowWidth / 2.0 - textWidth / 2.0) / 600.0 - 1.0;
+    double textY = (windowHeight / 2.0 - textHeight / 2.0) / 600.0 - 1.0;
 
     //设置文本位置并绘制
     glRasterPos2f(textX, textY);

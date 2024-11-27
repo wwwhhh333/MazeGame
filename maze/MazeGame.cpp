@@ -1,5 +1,8 @@
 #include "MazeGame.h"
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
 const int MAZE_WIDTH = 40;
 const int MAZE_HEIGHT = 40;
 const float CELL_SIZE = 2.0 / MAZE_WIDTH;
@@ -140,14 +143,14 @@ void MazeGame::drawPromptBar() {
     //绘制左上方提示文字
     glColor3f(0.0f, 0.0f, 0.0f);
     glRasterPos2f(-0.95f, 0.92f);
-    std::string Text = "Press e to enter EditMode       Press t to get a hint";
+    std::string Text = "Press e to enter EditMode         Press t to get a hint";
     for (char c : Text) {
         glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, c);
     }
 
     //绘制右上方剩余时间
     std::string timeText = "Remaining Time: " + std::to_string(TIME_LIMIT - getElapsedTime());
-    glRasterPos2f(0.4f, 0.92f);
+    glRasterPos2f(0.6f, 0.92f);
     for (char c : timeText) {
         glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, c);
     }
@@ -166,16 +169,10 @@ void MazeGame::drawMaze() {
             //根据单元格类型设置颜色
             switch (maze[y][x]) {
             case WALL: //灰/红 
-                glColor3f(editMode ? 1.0f : 0.5f, editMode ? 0.0f : 0.5f, editMode ? 0.0f : 0.5f);
+                glColor3f(editMode ? 1.0f : 0.0f, editMode ? 0.0f : 0.5f, editMode ? 0.0f : 0.5f);
                 break;
             case PATH: //白
                 glColor3f(1.0f, 1.0f, 1.0f);
-                break;
-            case MOUSE: //绿
-                glColor3f( 0.0f, 1.0f, 0.0f);
-                break;
-            case TARGET: //品红
-                glColor3f(1.0f, 0.0f, 1.0f);
                 break;
             case TIPS1: //青色
                 glColor3f(0.0f, 1.0f, 1.0f);
@@ -192,6 +189,35 @@ void MazeGame::drawMaze() {
             glVertex2f(posX + CELL_SIZE, posY + CELL_SIZE);
             glVertex2f(posX, posY + CELL_SIZE);
             glEnd();
+
+            glColor3f(1.0f, 1.0f, 1.0f); //重置当前颜色到白色
+            switch (maze[y][x]) {
+            case MOUSE: //绿
+                //使用纹理绘制老鼠
+                //std::cout << maze[y][x] << std::endl;
+                glEnable(GL_TEXTURE_2D);
+                glBindTexture(GL_TEXTURE_2D, mouseTexture);
+                glBegin(GL_QUADS);
+                glTexCoord2f(0.0f, 0.0f); glVertex2f(posX, posY + CELL_SIZE); //左下角
+                glTexCoord2f(1.0f, 0.0f); glVertex2f(posX + CELL_SIZE, posY + CELL_SIZE); //右下角 
+                glTexCoord2f(1.0f, 1.0f); glVertex2f(posX + CELL_SIZE, posY); //右上角
+                glTexCoord2f(0.0f, 1.0f); glVertex2f(posX, posY); //左上角
+                glEnd();
+                glDisable(GL_TEXTURE_2D);
+                break;
+            case TARGET: //品红
+                //使用纹理绘制粮仓
+                glEnable(GL_TEXTURE_2D);
+                glBindTexture(GL_TEXTURE_2D, targetTexture);
+                glBegin(GL_QUADS);
+                glTexCoord2f(0.0f, 0.0f); glVertex2f(posX, posY + CELL_SIZE); //左下角
+                glTexCoord2f(1.0f, 0.0f); glVertex2f(posX + CELL_SIZE, posY + CELL_SIZE); //右下角 
+                glTexCoord2f(1.0f, 1.0f); glVertex2f(posX + CELL_SIZE, posY); //右上角
+                glTexCoord2f(0.0f, 1.0f); glVertex2f(posX, posY); //左上角
+                glEnd();
+                glDisable(GL_TEXTURE_2D);
+                break;
+            }
         }
     }
 
@@ -359,6 +385,35 @@ MazeGame::MazeGame() {
     gameOver = false;
     gameWon = false;
     editMode = false;
+
+    //加载老鼠纹理
+    int width, height, nrChannels;
+    unsigned char* data = stbi_load("resources/mouse.png", &width, &height, &nrChannels, 0);
+    if (data) {
+        //std::cout << width << "," << height << "," << nrChannels << std::endl;
+        glGenTextures(1, &mouseTexture);
+        glBindTexture(GL_TEXTURE_2D, mouseTexture);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+        stbi_image_free(data);
+    }
+    else {
+        std::cout << "无法加载老鼠纹理: " << stbi_failure_reason() << std::endl;
+    }
+
+    //加载粮仓纹理
+    data = stbi_load("resources/target.png", &width, &height, &nrChannels, 0);
+    if (data) {
+        //std::cout << width << "," << height << "," << nrChannels << std::endl;
+        glGenTextures(1, &targetTexture); 
+        glBindTexture(GL_TEXTURE_2D, targetTexture);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+        stbi_image_free(data);
+    }
+    else {
+        std::cout << "无法加载粮仓纹理" << stbi_failure_reason() << std::endl;
+    }
 }
 
 //处理按键按下事件

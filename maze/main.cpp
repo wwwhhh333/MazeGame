@@ -1,5 +1,6 @@
 #include "MazeGame.h"
 #include "Screen.h"
+#include "stb_image.h"
 
 //按键回调函数，当有按键按下时被GLFW调用
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
@@ -17,8 +18,8 @@ void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
         glfwGetCursorPos(window, &x, &y);
 
         //转换OpenGL坐标系
-        x = (x / 400.0) - 1.0;
-        y = -(y / 400.0) + 1.0;
+        x = (x / 600.0) - 1.0;
+        y = -(y / 600.0) + 1.0;
 
         MazeGame* game = static_cast<MazeGame*>(glfwGetWindowUserPointer(window));
         game->handleMouseClick(x, y);
@@ -28,7 +29,7 @@ void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
 int main() {
     if (!glfwInit()) return -1;
 
-    GLFWwindow* window = glfwCreateWindow(800, 800, "Maze", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(1200, 1200, "Maze", NULL, NULL);
     if (!window) {
         glfwTerminate();
         return -1;
