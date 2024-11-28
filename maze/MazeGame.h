@@ -14,13 +14,17 @@
 #include <ctime>
 #include <string>
 
+const float maze_pixel = 600.0f;
+
 enum CellType { WALL, PATH, MOUSE, TARGET, TIPS1, TIPS2 }; //单元格类型
 
 //迷宫游戏类
 class MazeGame {
 private:
     GLuint mouseTexture; //老鼠的纹理ID
-    GLuint targetTexture; //粮仓的纹理ID
+    GLuint targetTexture; //粮仓
+    GLuint wallTexture; //墙壁
+    GLuint wall_editingTexture; //编辑墙壁
 
     CellType maze[100][100]; //存储迷宫布局的二维数组
     int mouseX, mouseY; //老鼠当前坐标
@@ -39,8 +43,8 @@ private:
 
     std::vector<std::vector<std::pair<int, int>>> allPaths; //全部路径
     std::vector<std::pair<int, int>> shortestPath; //最短路径
-    void DFS(int currentX, int currentY, std::vector<std::pair<int, int>> currentPath);
-    bool isValidPosition(int nextX, int nextY, const std::vector<std::pair<int, int>>& currentPath);
+    void DFS(int currentX, int currentY, std::vector<std::pair<int, int>> currentPath); //DFS
+    bool isValidPosition(int nextX, int nextY, const std::vector<std::pair<int, int>>& currentPath); //判断位置是否合法
     void findAllPathDFS(); //寻找所有路径
     void drawPath(); //绘制路径
 

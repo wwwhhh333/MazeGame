@@ -18,8 +18,8 @@ void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
         glfwGetCursorPos(window, &x, &y);
 
         //×ª»»OpenGL×ø±êÏµ
-        x = (x / 600.0) - 1.0;
-        y = -(y / 600.0) + 1.0;
+        x = (x / maze_pixel) - 1.0;
+        y = -(y / maze_pixel) + 1.0;
 
         MazeGame* game = static_cast<MazeGame*>(glfwGetWindowUserPointer(window));
         game->handleMouseClick(x, y);
@@ -29,7 +29,7 @@ void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
 int main() {
     if (!glfwInit()) return -1;
 
-    GLFWwindow* window = glfwCreateWindow(1200, 1200, "Maze", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(maze_pixel * 2, maze_pixel * 2, "Maze", NULL, NULL);
     if (!window) {
         glfwTerminate();
         return -1;

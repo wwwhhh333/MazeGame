@@ -3,48 +3,38 @@
 #include "MazeGame.h"
 #include <thread>
 
+#include "stb_image.h"
+
+GLuint startTexture, winTexture, loseTexture;
 void showStartScreen(GLFWwindow* window) {
     //获取窗口宽度
     int windowWidth, windowHeight;
     glfwGetWindowSize(window, &windowWidth, &windowHeight);
 
-    //设置背景颜色
-    glClearColor(1.0, 1.0, 0.6, 1.0);
-    glClear(GL_COLOR_BUFFER_BIT);
+    //加载背景
+    int width, height, nrChannels;
+    unsigned char* data = stbi_load("resources/start.png", &width, &height, &nrChannels, 0);
+    if (data) {
+        //std::cout << width << "," << height << "," << nrChannels << std::endl;
+        glGenTextures(1, &startTexture);
+        glBindTexture(GL_TEXTURE_2D, startTexture);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+        stbi_image_free(data);
+    }
+    else {
+        std::cout << "无法加载开始背景: " << stbi_failure_reason() << std::endl;
+    }
 
-    //绘制“开始游戏”按钮（这里简单用一个矩形表示，可根据需要美化）
-    glColor3f(1.0f, 1.0f, 1.0f);
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, startTexture);
     glBegin(GL_QUADS);
-    glVertex2f(-0.2f, -0.1f);
-    glVertex2f(0.2f, -0.1f);
-    glVertex2f(0.2f, 0.1f);
-    glVertex2f(-0.2f, 0.1f);
+    glTexCoord2f(0.0f, 0.0f); glVertex2f(-1.0, 1.0);
+    glTexCoord2f(1.0f, 0.0f); glVertex2f(1.0, 1.0); 
+    glTexCoord2f(1.0f, 1.0f); glVertex2f(1.0, -1.0);
+    glTexCoord2f(0.0f, 1.0f); glVertex2f(-1.0, -1.0);
     glEnd();
-
-    //绘制按钮文字
-    std::string startText = "Start";
-    glColor3f(0.0f, 0.0f, 0.0f);
-
-    //计算文本宽度
-    double textWidth = 0.0;
-    for (char c : startText) {
-        textWidth += glutBitmapWidth(GLUT_BITMAP_TIMES_ROMAN_24, c);
-    }
-
-    //计算按钮中心坐标
-    double buttonCenterX = (windowWidth / 2.0) / 600.0 - 1.0;
-    double buttonCenterY = 0.0f;
-
-    //计算文本起始坐标以实现上下居中
-    double textStartX = buttonCenterX - (textWidth / 2.0) / 600.0;
-    const double FONT_HEIGHT = 24.0f;
-    double textStartY = buttonCenterY - (FONT_HEIGHT / 2.0f) / 600.0f;
-
-    //设置文本位置并绘制
-    glRasterPos2f(textStartX, textStartY);
-    for (char c : startText) {
-        glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, c);
-    }
+    glDisable(GL_TEXTURE_2D);
 
     glfwSwapBuffers(window);
 
@@ -54,10 +44,10 @@ void showStartScreen(GLFWwindow* window) {
         if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
             double x, y;
             glfwGetCursorPos(window, &x, &y);
-            // 转换坐标到 -1到1范围
-            x = (x / 600.0) - 1.0;
-            y = -(y / 600.0) + 1.0;
-            // 检查是否点击了按钮区域
+            //转换坐标到 -1到1范围
+            x = (x / maze_pixel) - 1.0;
+            y = -(y / maze_pixel) + 1.0;
+            //检查是否点击了按钮区域
             if (x >= -0.5f && x <= 0.5f && y >= -0.2f && y <= 0.2f) {
                 break;
             }
@@ -67,41 +57,64 @@ void showStartScreen(GLFWwindow* window) {
 
 
 void showEndScreen(GLFWwindow* window, bool isWon) {
+
+    glColor3f(1.0f, 1.0f, 1.0f);
+
+    //加载背景
+    int width, height, nrChannels;
+    unsigned char* data = stbi_load("resources/win.png", &width, &height, &nrChannels, 0);
+    if (data) {
+        //std::cout << width << "," << height << "," << nrChannels << std::endl;
+        glGenTextures(1, &winTexture);
+        glBindTexture(GL_TEXTURE_2D, winTexture);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+        stbi_image_free(data);
+    }
+    else {
+        std::cout << "无法加载win背景: " << stbi_failure_reason() << std::endl;
+    }
+
+    data = stbi_load("resources/lose.png", &width, &height, &nrChannels, 0);
+    if (data) {
+        //std::cout << width << "," << height << "," << nrChannels << std::endl;
+        glGenTextures(1, &loseTexture);
+        glBindTexture(GL_TEXTURE_2D, loseTexture);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+        stbi_image_free(data);
+    }
+    else {
+        std::cout << "无法加载lose背景: " << stbi_failure_reason() << std::endl;
+    }
+
+
     //获取窗口宽度和高度
     int windowWidth, windowHeight;
     glfwGetWindowSize(window, &windowWidth, &windowHeight);
 
-    //设置背景颜色
-    glClearColor(1.0, 1.0, 0.6, 1.0);
-    glClear(GL_COLOR_BUFFER_BIT);
-
     std::string endText;
     if (isWon) {
-        endText = "congratulations！";
+        glEnable(GL_TEXTURE_2D);
+        glBindTexture(GL_TEXTURE_2D, winTexture);
+        glBegin(GL_QUADS);
+        glTexCoord2f(0.0f, 0.0f); glVertex2f(-1.0, 1.0);
+        glTexCoord2f(1.0f, 0.0f); glVertex2f(1.0, 1.0);
+        glTexCoord2f(1.0f, 1.0f); glVertex2f(1.0, -1.0);
+        glTexCoord2f(0.0f, 1.0f); glVertex2f(-1.0, -1.0);
+        glEnd();
+        glDisable(GL_TEXTURE_2D);
     }
     else {
-        endText = "Run out of time...";
-    }
-
-    glColor3f(0.0f, 0.0f, 0.0f);
-
-    //计算文本宽度
-    double textWidth = 0.0;
-    for (char c : endText) {
-        textWidth += glutBitmapWidth(GLUT_BITMAP_TIMES_ROMAN_24, c);
-    }
-
-    //计算文本高度
-    double textHeight = 24;
-
-    //计算文本在窗口中的居中位置
-    double textX = (windowWidth / 2.0 - textWidth / 2.0) / 600.0 - 1.0;
-    double textY = (windowHeight / 2.0 - textHeight / 2.0) / 600.0 - 1.0;
-
-    //设置文本位置并绘制
-    glRasterPos2f(textX, textY);
-    for (char c : endText) {
-        glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, c);
+        glEnable(GL_TEXTURE_2D);
+        glBindTexture(GL_TEXTURE_2D, loseTexture);
+        glBegin(GL_QUADS);
+        glTexCoord2f(0.0f, 0.0f); glVertex2f(-1.0, 1.0);
+        glTexCoord2f(1.0f, 0.0f); glVertex2f(1.0, 1.0);
+        glTexCoord2f(1.0f, 1.0f); glVertex2f(1.0, -1.0);
+        glTexCoord2f(0.0f, 1.0f); glVertex2f(-1.0, -1.0);
+        glEnd();
+        glDisable(GL_TEXTURE_2D);
     }
 
     glfwSwapBuffers(window);

@@ -1,2 +1,3 @@
-﻿  main.cpp
+﻿  MazeGame.cpp
+D:\学习\资料\数据结构\大作业\maze\maze\MazeGame.cpp(313,25): warning C4018: '<': signed/unsigned mismatch
   maze.vcxproj -> D:\学习\资料\数据结构\大作业\maze\Debug\maze.exe

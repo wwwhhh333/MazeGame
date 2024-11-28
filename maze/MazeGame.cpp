@@ -6,7 +6,7 @@
 const int MAZE_WIDTH = 40;
 const int MAZE_HEIGHT = 40;
 const float CELL_SIZE = 2.0 / MAZE_WIDTH;
-const int TIME_LIMIT = 60;
+const int TIME_LIMIT = 30;
 
 //随机Prim算法初始化迷宫
 void MazeGame::initMaze() {
@@ -20,7 +20,6 @@ void MazeGame::initMaze() {
     int dx[] = { 0, 1, 0, -1 };
     int dy[] = { 1, 0, -1, 0 };
 
-    
     std::vector<std::pair<int, int>> walls; //墙壁列表  
 
     //选择起始单元格（例如迷宫中心）  
@@ -38,6 +37,7 @@ void MazeGame::initMaze() {
         }
     }
 
+    srand((int)time(0));
     //当列表里还有墙时  
     while (!walls.empty()) {
         //随机选择一面墙  
@@ -117,16 +117,9 @@ void MazeGame::initMaze() {
     mouseY = MAZE_HEIGHT / 2;
     maze[mouseY][mouseX] = MOUSE;
 
-    targetX = MAZE_WIDTH - 2; targetY = 2;
-    while(1) {
-        if (maze[targetY][targetX] == PATH) {
-            maze[targetY][targetX] = TARGET;
-            break;
-        }
-        else {
-            targetY++;
-        }
-    }
+    targetX = MAZE_WIDTH - 2; 
+    targetY = 1;
+    maze[targetY][targetX] = TARGET;
 }
 
 //绘制提示栏
@@ -168,17 +161,14 @@ void MazeGame::drawMaze() {
 
             //根据单元格类型设置颜色
             switch (maze[y][x]) {
-            case WALL: //灰/红 
-                glColor3f(editMode ? 1.0f : 0.0f, editMode ? 0.0f : 0.5f, editMode ? 0.0f : 0.5f);
-                break;
             case PATH: //白
                 glColor3f(1.0f, 1.0f, 1.0f);
                 break;
             case TIPS1: //青色
                 glColor3f(0.0f, 1.0f, 1.0f);
                 break;
-            case TIPS2: //黄色
-                glColor3f(1.0f, 1.0f, 0.0f);
+            case TIPS2: //绿色
+                glColor3f(0.7f, 1.0f, 0.0f);
                 break;
             }
 
@@ -192,7 +182,7 @@ void MazeGame::drawMaze() {
 
             glColor3f(1.0f, 1.0f, 1.0f); //重置当前颜色到白色
             switch (maze[y][x]) {
-            case MOUSE: //绿
+            case MOUSE:
                 //使用纹理绘制老鼠
                 //std::cout << maze[y][x] << std::endl;
                 glEnable(GL_TEXTURE_2D);
@@ -205,8 +195,7 @@ void MazeGame::drawMaze() {
                 glEnd();
                 glDisable(GL_TEXTURE_2D);
                 break;
-            case TARGET: //品红
-                //使用纹理绘制粮仓
+            case TARGET:
                 glEnable(GL_TEXTURE_2D);
                 glBindTexture(GL_TEXTURE_2D, targetTexture);
                 glBegin(GL_QUADS);
@@ -216,6 +205,30 @@ void MazeGame::drawMaze() {
                 glTexCoord2f(0.0f, 1.0f); glVertex2f(posX, posY); //左上角
                 glEnd();
                 glDisable(GL_TEXTURE_2D);
+                break;
+            case WALL:
+                if (!editMode) {
+                    glEnable(GL_TEXTURE_2D);
+                    glBindTexture(GL_TEXTURE_2D, wallTexture);
+                    glBegin(GL_QUADS);
+                    glTexCoord2f(0.0f, 0.0f); glVertex2f(posX, posY + CELL_SIZE); //左下角
+                    glTexCoord2f(1.0f, 0.0f); glVertex2f(posX + CELL_SIZE, posY + CELL_SIZE); //右下角 
+                    glTexCoord2f(1.0f, 1.0f); glVertex2f(posX + CELL_SIZE, posY); //右上角
+                    glTexCoord2f(0.0f, 1.0f); glVertex2f(posX, posY); //左上角
+                    glEnd();
+                    glDisable(GL_TEXTURE_2D);
+                }
+                else {
+                    glEnable(GL_TEXTURE_2D);
+                    glBindTexture(GL_TEXTURE_2D, wall_editingTexture);
+                    glBegin(GL_QUADS);
+                    glTexCoord2f(0.0f, 0.0f); glVertex2f(posX, posY + CELL_SIZE); //左下角
+                    glTexCoord2f(1.0f, 0.0f); glVertex2f(posX + CELL_SIZE, posY + CELL_SIZE); //右下角 
+                    glTexCoord2f(1.0f, 1.0f); glVertex2f(posX + CELL_SIZE, posY); //右上角
+                    glTexCoord2f(0.0f, 1.0f); glVertex2f(posX, posY); //左上角
+                    glEnd();
+                    glDisable(GL_TEXTURE_2D);
+                }
                 break;
             }
         }
@@ -237,7 +250,6 @@ void MazeGame::drawPath() {
             maze[point.second][point.first] = TIPS1;
         }
     }
-
 
     std::cout << "绘制最短路径" << std::endl;
     for (const auto& path : shortestPath) {
@@ -412,7 +424,35 @@ MazeGame::MazeGame() {
         stbi_image_free(data);
     }
     else {
-        std::cout << "无法加载粮仓纹理" << stbi_failure_reason() << std::endl;
+        std::cout << "无法加载粮仓纹理:" << stbi_failure_reason() << std::endl;
+    }
+
+    //加载墙壁纹理
+    data = stbi_load("resources/wall.png", &width, &height, &nrChannels, 0);
+    if (data) {
+        //std::cout << width << "," << height << "," << nrChannels << std::endl;
+        glGenTextures(1, &wallTexture);
+        glBindTexture(GL_TEXTURE_2D, wallTexture);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+        stbi_image_free(data);
+    }
+    else {
+        std::cout << "无法加载墙壁纹理:" << stbi_failure_reason() << std::endl;
+    }
+
+    //加载编辑墙壁纹理
+    data = stbi_load("resources/wall_editing.png", &width, &height, &nrChannels, 0);
+    if (data) {
+        //std::cout << width << "," << height << "," << nrChannels << std::endl;
+        glGenTextures(1, &wall_editingTexture);
+        glBindTexture(GL_TEXTURE_2D, wall_editingTexture);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+        stbi_image_free(data);
+    }
+    else {
+        std::cout << "无法加载编辑墙壁纹理:" << stbi_failure_reason() << std::endl;
     }
 }
 
